@@ -33,12 +33,12 @@ app.post('/api/generate-news', async (req, res) => {
 
     // List of available Gemini models to try
     const models = [
-        'gemini-1.5-flash',
-        'gemini-1.5-flash-latest',
-        'gemini-1.5-pro',
-        'gemini-1.5-pro-latest',
-        'gemini-pro',
-        'gemini-1.0-pro'
+        'gemini-2.5-flash',
+        'gemini-2.0-flash',
+        'gemini-flash-latest',
+        'gemini-pro-latest',
+        'gemini-2.5-pro',
+        'gemini-pro'
     ];
 
     const prompt = `Generate ${count} satirical news headlines in The Onion style, focused on India. 
