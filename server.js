@@ -1,4 +1,5 @@
 // server.js - Node.js Express server for The Briefing
+// server.js - Node.js Express server for The Briefing
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
@@ -31,6 +32,16 @@ app.post('/api/generate-news', async (req, res) => {
         ? categories[Math.floor(Math.random() * categories.length)]
         : category;
 
+    // List of available Gemini models to try
+    const models = [
+        'gemini-1.5-flash',
+        'gemini-1.5-flash-latest',
+        'gemini-1.5-pro',
+        'gemini-1.5-pro-latest',
+        'gemini-pro',
+        'gemini-1.0-pro'
+    ];
+
     const prompt = `Generate ${count} satirical news headlines in The Onion style, focused on India. 
 Category: ${selectedCategory}
 
@@ -49,60 +60,72 @@ Return ONLY a JSON array with this exact structure:
 
 Make sure headlines are witty and reference Indian culture, cities, daily life, or current trends. Be creative and absurd!`;
 
-    try {
-        const response = await fetch(
-            `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`,
-            {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    contents: [{
-                        parts: [{
-                            text: prompt
-                        }]
-                    }],
-                    generationConfig: {
-                        temperature: 1.0,
-                        maxOutputTokens: 2048,
-                    }
-                })
+    // Try each model until one works
+    for (const model of models) {
+        try {
+            console.log(`Trying model: ${model}`);
+            
+            const response = await fetch(
+                `https://generativelanguage.googleapis.com/v1/models/${model}:generateContent?key=${GEMINI_API_KEY}`,
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [{
+                                text: prompt
+                            }]
+                        }],
+                        generationConfig: {
+                            temperature: 1.0,
+                            maxOutputTokens: 2048,
+                        }
+                    })
+                }
+            );
+
+            const data = await response.json();
+            
+            if (!response.ok) {
+                console.log(`Model ${model} failed: ${data.error?.message}`);
+                continue; // Try next model
             }
-        );
 
-        const data = await response.json();
-        
-        if (!response.ok) {
-            throw new Error(data.error?.message || 'Gemini API error');
+            console.log(`Success with model: ${model}`);
+            
+            const generatedText = data.candidates[0].content.parts[0].text;
+            
+            // Extract JSON from markdown code blocks if present
+            let jsonText = generatedText;
+            const jsonMatch = generatedText.match(/```json\n([\s\S]*?)\n```/) || 
+                             generatedText.match(/```\n([\s\S]*?)\n```/);
+            if (jsonMatch) {
+                jsonText = jsonMatch[1];
+            }
+            
+            const articles = JSON.parse(jsonText);
+            
+            // Add IDs to articles
+            const articlesWithIds = articles.map((article, index) => ({
+                id: Date.now() + index,
+                ...article
+            }));
+
+            return res.json(articlesWithIds);
+            
+        } catch (error) {
+            console.log(`Model ${model} error: ${error.message}`);
+            continue; // Try next model
         }
-
-        const generatedText = data.candidates[0].content.parts[0].text;
-        
-        // Extract JSON from markdown code blocks if present
-        let jsonText = generatedText;
-        const jsonMatch = generatedText.match(/```json\n([\s\S]*?)\n```/) || 
-                         generatedText.match(/```\n([\s\S]*?)\n```/);
-        if (jsonMatch) {
-            jsonText = jsonMatch[1];
-        }
-        
-        const articles = JSON.parse(jsonText);
-        
-        // Add IDs to articles
-        const articlesWithIds = articles.map((article, index) => ({
-            id: Date.now() + index,
-            ...article
-        }));
-
-        res.json(articlesWithIds);
-    } catch (error) {
-        console.error('Error generating news:', error);
-        res.status(500).json({ 
-            error: 'Failed to generate news',
-            details: error.message 
-        });
     }
+    
+    // If all models failed
+    res.status(500).json({ 
+        error: 'Failed to generate news with any available model',
+        details: 'All Gemini models failed. Please check your API key and quota.'
+    });
 });
 
 app.listen(PORT, () => {
