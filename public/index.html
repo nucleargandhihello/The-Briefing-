@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Briefing - India's Finest Satirical News</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', serif;
+            background-color: #F5F5DC;
+            color: #1a1a1a;
+            line-height: 1.6;
+        }
+
+        .header {
+            background-color: #000;
+            color: #F5F5DC;
+            padding: 2rem 1rem;
+            text-align: center;
+            border-bottom: 4px solid #D4A574;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            font-weight: bold;
+            letter-spacing: 2px;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            font-style: italic;
+            color: #D4A574;
+            font-size: 0.9rem;
+        }
+
+        .nav {
+            background-color: #1a1a1a;
+            padding: 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .nav-btn {
+            background-color: #2a2a2a;
+            color: #F5F5DC;
+            border: 1px solid #D4A574;
+            padding: 0.5rem 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: inherit;
+            font-size: 0.9rem;
+        }
+
+        .nav-btn:hover {
+            background-color: #D4A574;
+            color: #000;
+        }
+
+        .nav-btn.active {
+            background-color: #D4A574;
+            color: #000;
+            border-color: #000;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+
+        .generate-section {
+            background-color: #000;
+            color: #F5F5DC;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 2px solid #D4A574;
+            text-align: center;
+        }
+
+        .generate-section h2 {
+            margin-bottom: 1rem;
+            color: #D4A574;
+        }
+
+        .generate-btn {
+            background-color: #D4A574;
+            color: #000;
+            border: none;
+            padding: 1rem 2rem;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+
+        .generate-btn:hover:not(:disabled) {
+            background-color: #F5F5DC;
+            transform: scale(1.05);
+        }
+
+        .generate-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .loading {
+            display: inline-block;
+            margin-left: 10px;
+        }
+
+        .featured {
+            background-color: #fff;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border-left: 6px solid #000;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .featured .category {
+            color: #D4A574;
+            font-size: 0.8rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.5rem;
+        }
+
+        .featured h2 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: #000;
+        }
+
+        .featured .summary {
+            font-size: 1.1rem;
+            color: #333;
+            margin-bottom: 1rem;
+        }
+
+        .meta {
+            font-size: 0.9rem;
+            color: #666;
+            font-style: italic;
+        }
+
+        .articles-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .article-card {
+            background-color: #fff;
+            padding: 1.5rem;
+            border: 1px solid #D4A574;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .article-card:hover {
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+            transform: translateY(-2px);
+        }
+
+        .article-card .category {
+            color: #D4A574;
+            font-size: 0.75rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.5rem;
+        }
+
+        .article-card h3 {
+            font-size: 1.3rem;
+            margin-bottom: 0.75rem;
+            color: #000;
+            line-height: 1.4;
+        }
+
+        .article-card .summary {
+            color: #555;
+            margin-bottom: 1rem;
+            font-size: 0.95rem;
+        }
+
+        .footer {
+            background-color: #000;
+            color: #F5F5DC;
+            padding: 2rem;
+            text-align: center;
+            margin-top: 3rem;
+            border-top: 4px solid #D4A574;
+        }
+
+        .footer p {
+            margin-bottom: 0.5rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 1rem;
+            color: #666;
+        }
+
+        .api-notice {
+            background-color: #fff3cd;
+            border: 2px solid #D4A574;
+            padding: 1rem;
+            margin-bottom: 2rem;
+            text-align: center;
+            color: #856404;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <h1>THE BRIEFING</h1>
+        <p>India's Finest Satirical News Source</p>
+    </header>
+
+    <nav class="nav">
+        <div class="nav-container">
+            <button class="nav-btn active" onclick="filterCategory('all')">All News</button>
+            <button class="nav-btn" onclick="filterCategory('politics')">Politics</button>
+            <button class="nav-btn" onclick="filterCategory('technology')">Technology</button>
+            <button class="nav-btn" onclick="filterCategory('lifestyle')">Lifestyle</button>
+            <button class="nav-btn" onclick="filterCategory('business')">Business</button>
+            <button class="nav-btn" onclick="filterCategory('cricket')">Cricket</button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div id="apiNotice" class="api-notice" style="display: none;">
+            ⚠️ Gemini API key not configured. Using sample articles. Deploy to Render with GEMINI_API_KEY environment variable.
+        </div>
+
+        <div class="generate-section">
+            <h2>Generate Fresh Absurd News</h2>
+            <button class="generate-btn" onclick="generateNews()" id="generateBtn">
+                Generate New Headlines
+            </button>
+        </div>
+
+        <div id="content"></div>
+    </div>
+
+    <footer class="footer">
+        <p>© 2025 The Briefing. All wrongs reserved.</p>
+        <p style="font-size: 0.9rem;">Disclaimer: This is satire. If you believed any of this, please check your sources.</p>
+    </footer>
+
+    <script>
+        let articles = [
+            {
+                id: 1,
+                category: 'politics',
+                headline: 'Delhi Metro Announces New "Standing Only" Class For Commuters Who Enjoy Personal Space Violations',
+                summary: 'DMRC introduces revolutionary new service tier where passengers pay premium rates to be squeezed between strangers during peak hours, promises authentic Delhi experience.',
+                author: 'Priya Sharma',
+                date: 'Oct 19, 2025'
+            },
+            {
+                id: 2,
+                category: 'technology',
+                headline: 'Bengaluru Traffic Moves 50 Meters, Tech Workers Call It "Historic Breakthrough"',
+                summary: 'Employees at Outer Ring Road stuck in traffic since morning report unprecedented progress at 3 PM, celebrate with horn honking ceremony.',
+                author: 'Arjun Patel',
+                date: 'Oct 19, 2025'
+            },
+            {
+                id: 3,
+                category: 'lifestyle',
+                headline: 'Mumbai Man\'s Dabba Missing One Roti, Launches Full Investigation Into Wife\'s Intentions',
+                summary: 'Andheri resident files complaint with society, questions whether forgotten chapati signals deeper marital issues or just honest mistake.',
+                author: 'Sneha Kulkarni',
+                date: 'Oct 18, 2025'
+            },
+            {
+                id: 4,
+                category: 'business',
+                headline: 'Startup Claims It\'s "Uber For Aunties", Will Deploy Judgmental Women to Your Location Within Minutes',
+                summary: 'New app promises to deliver unsolicited life advice, marriage pressure, and weight commentary directly to users nationwide. Series A funding already secured.',
+                author: 'Rahul Verma',
+                date: 'Oct 18, 2025'
+            },
+            {
+                id: 5,
+                category: 'cricket',
+                headline: 'Indian Cricket Team Wins Match, Nation Takes Day Off Work To Discuss Every Single Ball',
+                summary: 'Productivity across country drops to zero as 1.4 billion people engage in detailed analysis of yesterday\'s victory over WhatsApp.',
+                author: 'Vikram Singh',
+                date: 'Oct 17, 2025'
+            },
+            {
+                id: 6,
+                category: 'technology',
+                headline: 'IT Professional Finally Admits He Just Googles Everything, Parents Still Think He\'s Genius',
+                summary: 'Pune-based software engineer confesses entire career built on Stack Overflow and YouTube tutorials, family remains impressed by "computer knowledge".',
+                author: 'Amit Desai',
+                date: 'Oct 17, 2025'
+            },
+            {
+                id: 7,
+                category: 'politics',
+                headline: 'Politicians Surprised To Learn They Need To Actually Do Work After Winning Election',
+                summary: 'Newly elected MPs reportedly shocked upon discovering job involves more than just ribbon-cutting ceremonies and selfies with constituents.',
+                author: 'Kavita Menon',
+                date: 'Oct 17, 2025'
+            },
+            {
+                id: 8,
+                category: 'lifestyle',
+                headline: 'Local Aunty Breaks World Record By Asking "Beta, When Will You Get Married?" 847 Times In Single Day',
+                summary: 'Noida resident Sunita Kapoor achieves unprecedented feat at cousin\'s wedding, targets include everyone from waiters to wedding photographer.',
+                author: 'Rohan Khanna',
+                date: 'Oct 16, 2025'
+            },
+            {
+                id: 9,
+                category: 'technology',
+                headline: 'Man Achieves Nirvana After LinkedIn Connection Finally Accepts Request After 3 Years',
+                summary: 'Hyderabad professional reports spiritual awakening when senior industry leader clicks "Accept", immediately sends "Hi sir, opportunity discuss" message.',
+                author: 'Sanjay Reddy',
+                date: 'Oct 16, 2025'
+            },
+            {
+                id: 10,
+                category: 'business',
+                headline: 'Gurgaon Office Mandates "Casual Friday" But Everyone Still Wears Same Formal Clothes Out Of Fear',
+                summary: 'Despite HR announcement, employees refuse to deviate from formal attire citing concerns about looking "unprofessional" during mandatory weekend meeting.',
+                author: 'Neha Gupta',
+                date: 'Oct 16, 2025'
+            },
+            {
+                id: 11,
+                category: 'cricket',
+                headline: 'WhatsApp Uncle Forwards 47 "Cricket Expert Analysis" Videos, Hasn\'t Watched Single Match',
+                summary: 'Retired banker becomes family\'s primary cricket commentary source despite last watching game in 1997, relies entirely on YouTube thumbnails.',
+                author: 'Aditya Rao',
+                date: 'Oct 15, 2025'
+            },
+            {
+                id: 12,
+                category: 'lifestyle',
+                headline: 'Woman\'s "Quick 5-Minute Pooja" Now Entering Fourth Hour, Family Starving',
+                summary: 'Chennai household reports Wednesday evening prayers showing no signs of conclusion, dinner indefinitely postponed as new mantras keep getting remembered.',
+                author: 'Lakshmi Iyer',
+                date: 'Oct 15, 2025'
+            },
+            {
+                id: 13,
+                category: 'technology',
+                headline: 'Engineering Graduate Completes Four Years Without Attending Single Morning Class, Still Graduates',
+                summary: 'VTU student credits success to strategic friendships, last-minute exam cramming, and never scheduling anything before 11 AM throughout entire degree.',
+                author: 'Karthik Bhat',
+                date: 'Oct 15, 2025'
+            },
+            {
+                id: 14,
+                category: 'business',
+                headline: 'Company Asks Employees To "Treat Office Like Family", Immediately Regrets As Everyone Starts Borrowing Money',
+                summary: 'Mumbai firm\'s team-building initiative backfires spectacularly when staff begins showing up unannounced demanding lunch and free chai.',
+                author: 'Pooja Nair',
+                date: 'Oct 14, 2025'
+            },
+            {
+                id: 15,
+                category: 'politics',
+                headline: 'Government Officially Renames Potholes As "Speed Control Infrastructure" To Avoid Repair Costs',
+                summary: 'Ministry issues circular declaring crater-filled roads are actually advanced traffic calming measures, maintenance budget redirected to statue construction.',
+                author: 'Rajesh Kumar',
+                date: 'Oct 14, 2025'
+            },
+            {
+                id: 16,
+                category: 'cricket',
+                headline: 'Indian Fan Base Demands Kohli Retire After Single Bad Shot, Demands His Return After Next Boundary',
+                summary: 'Social media exhibits remarkable volatility as opinions swing wildly between "finished player" and "greatest of all time" within 30-second window.',
+                author: 'Manish Pandey',
+                date: 'Oct 14, 2025'
+            },
+            {
+                id: 17,
+                category: 'lifestyle',
+                headline: 'Society WhatsApp Group Devolves Into 500-Message Debate Over Who Left Chappal Outside Lift',
+                summary: 'Peaceful Pune housing complex descends into chaos over footwear placement, residents taking sides, marriages strained, friendships tested.',
+                author: 'Anita Joshi',
+                date: 'Oct 13, 2025'
+            },
+            {
+                id: 18,
+                category: 'technology',
+                headline: 'Startup Founder Posts "Grinding Every Day" While Actually Just Scrolling Twitter For 8 Hours',
+                summary: 'Investigation reveals entrepreneur\'s daily "hustle" consists entirely of retweeting motivational quotes and arguing in reply sections.',
+                author: 'Varun Malhotra',
+                date: 'Oct 13, 2025'
+            },
+            {
+                id: 19,
+                category: 'business',
+                headline: 'Employee\'s "I\'m In A Meeting" Status Actually Means Watching Web Series Under Desk',
+                summary: 'Study finds 83% of "busy on call" indicators in Indian offices correspond with new OTT series releases, productivity plummets accordingly.',
+                author: 'Deepak Chatterjee',
+                date: 'Oct 13, 2025'
+            },
+            {
+                id: 20,
+                category: 'politics',
+                headline: 'Local MLA Cuts Ribbon On Already-Functioning School, Takes Credit For Education System',
+                summary: '127-year-old institution gets ceremonial reopening by politician who claims personal responsibility for its existence, demands statue installation.',
+                author: 'Suresh Babu',
+                date: 'Oct 12, 2025'
+            }
+        ];
+
+        let currentCategory = 'all';
+
+        function filterCategory(category) {
+            currentCategory = category;
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            renderArticles();
+        }
+
+        function renderArticles() {
+            const filtered = currentCategory === 'all' 
+                ? articles 
+                : articles.filter(a => a.category === currentCategory);
+
+            const content = document.getElementById('content');
+            
+            if (filtered.length === 0) {
+                content.innerHTML = '<div class="empty-state"><p style="font-size: 1.2rem;">No articles in this category yet. Generate some news!</p></div>';
+                return;
+            }
+
+            let html = `
+                <article class="featured">
+                    <div class="category">${filtered[0].category}</div>
+                    <h2>${filtered[0].headline}</h2>
+                    <p class="summary">${filtered[0].summary}</p>
+                    <div class="meta">${filtered[0].author} • ${filtered[0].date}</div>
+                </article>
+                <div class="articles-grid">
+            `;
+
+            for (let i = 1; i < filtered.length; i++) {
+                const article = filtered[i];
+                html += `
+                    <article class="article-card">
+                        <div class="category">${article.category}</div>
+                        <h3>${article.headline}</h3>
+                        <p class="summary">${article.summary}</p>
+                        <div class="meta">${article.author} • ${article.date}</div>
+                    </article>
+                `;
+            }
+
+            html += '</div>';
+            content.innerHTML = html;
+        }
+
+        async function generateNews() {
+            const btn = document.getElementById('generateBtn');
+            btn.disabled = true;
+            btn.innerHTML = 'Generating... <span class="loading">🔄</span>';
+
+            try {
+                // Try to call backend API
+                const response = await fetch('/api/generate-news', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        category: currentCategory === 'all' ? 'random' : currentCategory,
+                        count: 3
+                    })
+                });
+
+                if (response.ok) {
+                    const newArticles = await response.json();
+                    // Add generated articles to the beginning
+                    articles = [...newArticles, ...articles];
+                    renderArticles();
+                } else {
+                    throw new Error('API call failed');
+                }
+            } catch (error) {
+                console.log('Backend API not available, showing notice');
+                document.getElementById('apiNotice').style.display = 'block';
+                
+                // Fallback: shuffle existing articles
+                articles = articles.sort(() => Math.random() - 0.5);
+                renderArticles();
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = 'Generate New Headlines';
+            }
+        }
+
+        // Initial render
+        renderArticles();
+    </script>
+</body>
+  </html> 
