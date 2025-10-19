@@ -11,9 +11,55 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
 
+// In-memory storage for articles (will reset on server restart)
+let cachedArticles = [];
+
 // Serve the HTML file
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// RSS Feed endpoint
+app.get('/rss', (req, res) => {
+    const baseUrl = `${req.protocol}://${req.get('host')}`;
+    
+    const rssItems = cachedArticles.slice(0, 20).map(article => `
+    <item>
+      <title><![CDATA[${article.headline}]]></title>
+      <description><![CDATA[${article.summary}]]></description>
+      <author>${article.author}</author>
+      <category>${article.category}</category>
+      <pubDate>${new Date(article.date).toUTCString()}</pubDate>
+      <guid isPermaLink="false">${baseUrl}/#article-${article.id}</guid>
+    </item>`).join('\n');
+
+    const rssFeed = `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>The Briefing - India's Finest Satirical News</title>
+    <link>${baseUrl}</link>
+    <description>Absurd, satirical news about India that will make you laugh and question reality</description>
+    <language>en-in</language>
+    <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
+    <atom:link href="${baseUrl}/rss" rel="self" type="application/rss+xml"/>
+    ${rssItems}
+  </channel>
+</rss>`;
+
+    res.set('Content-Type', 'application/rss+xml');
+    res.send(rssFeed);
+});
+
+// Get articles endpoint (for RSS feed population)
+app.get('/api/articles', (req, res) => {
+    res.json(cachedArticles);
+});
+
+// Update articles cache
+app.post('/api/update-cache', (req, res) => {
+    const { articles } = req.body;
+    cachedArticles = articles || [];
+    res.json({ success: true, count: cachedArticles.length });
 });
 
 // Generate news endpoint
